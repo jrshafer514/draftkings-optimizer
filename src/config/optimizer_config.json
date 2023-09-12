@@ -1,0 +1,39 @@
+{
+    "RENAME_DICT": {
+        "Patrick Mahomes II": "Patrick Mahomes"
+    },
+    "TEAMS_DICT": {
+            "ARI": "",
+            "ATL": "",
+            "BAL": "",
+            "BUF": "",
+            "CAR": "",
+            "CHI": "",
+            "CIN": "",
+            "CLE": "",
+            "DAL": "",
+            "DEN": "",
+            "DET": "",
+            "GB": "",
+            "HOU": "",
+            "IND": "",
+            "JAC": "",
+            "KC": "",
+            "LV": "",
+            "LAC": "",
+            "LAR": "",
+            "MIA": "",
+            "MIN": "",
+            "NE": "",
+            "NO": "",
+            "NYG": "",
+            "NYJ": "",
+            "PHI": "",
+            "PIT": "",
+            "SF": "",
+            "SEA": "",
+            "TB": "",
+            "TEN": "",
+            "WAS": ""
+    }
+}
