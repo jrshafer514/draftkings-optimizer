@@ -11,6 +11,12 @@ class Optimizer():
     url = None
     positions = None
     config_file = None
+    week = None
+
+    @staticmethod
+    def return_week():
+        week = input("Enter Week: ")
+        return week
 
     @classmethod
     def draftkings_football(self):
@@ -20,8 +26,9 @@ class Optimizer():
         self.teams_dict = self.config_file["TEAMS_DICT"]
         self.url = "https://www.fantasypros.com/nfl/projections/{position}.php?week={week}&scoring=PPR"
         self.positions = ["qb", "rb", "wr", "te", "dst"]
+        self.week = self.return_week()
         return self
-    
+
     @classmethod
     def scrape_html(self, url: str, week: str, position: str):
         request = requests.get(self.url.format(position=position, week=week))
@@ -51,7 +58,7 @@ class Optimizer():
     
     @classmethod
     def get_lineups(self):
-        week = input("Enter Week Number: ")
+        week = self.week
         dfs = []
         for position in self.positions:
             if position == "dst":
@@ -77,7 +84,6 @@ class Optimizer():
         optimizer = get_optimizer(Site.DRAFTKINGS, Sport.FOOTBALL)
         optimizer.load_players_from_csv(temp_csv_name)
         optimizer.set_max_repeating_players(2)
-        output = ""
         for lineup in optimizer.optimize(n=5):
 
             yield(lineup)
@@ -87,5 +93,3 @@ class Optimizer():
         output = "\n".join(str(lineup) for lineup in lineups)
 
         return output
-
-
