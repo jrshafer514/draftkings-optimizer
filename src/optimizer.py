@@ -6,32 +6,50 @@ import tempfile
 import json
 
 class Optimizer():
-    rename_dict = None
-    teams_dict = None
-    url = None
-    positions = None
-    config_file = None
-    week = None
-
-    @staticmethod
-    def return_week():
-        week = input("Enter Week: ")
-        return week
+    """
+    This class handles optimizer functions.
+    """
+    def __init__(self, week: str) -> None:
+        self.week = week
+        self.rename_dict = None
+        self.teams_dict = None
+        self.url = None
+        self.positions = None
+        self.config_file = None
 
     @classmethod
-    def draftkings_football(self):
+    def draftkings_football(cls, week: str):
+        """
+        Construct Draftkings Football Optimizer Class
+
+        Args:
+            cls: The class itself.
+            week (str): Football week to optimize.
+        
+        Returns: 
+            Draftkings Football Optimizer: An instance of Draftkings Football Optimizer Class.
+        """
+        optimizer = cls(week)
         with open("config/optimizer_config.json") as j:
-            self.config_file = json.load(j)
-        self.rename_dict = self.config_file["RENAME_DICT"]
-        self.teams_dict = self.config_file["TEAMS_DICT"]
-        self.url = "https://www.fantasypros.com/nfl/projections/{position}.php?week={week}&scoring=PPR"
-        self.positions = ["qb", "rb", "wr", "te", "dst"]
-        self.week = self.return_week()
-        return self
+            optimizer.config_file = json.load(j)
+        optimizer.rename_dict = optimizer.config_file["RENAME_DICT"]
+        optimizer.teams_dict = optimizer.config_file["TEAMS_DICT"]
+        optimizer.url = "https://www.fantasypros.com/nfl/projections/{position}.php?week={week}&scoring=PPR"
+        optimizer.positions = ["qb", "rb", "wr", "te", "dst"]
+    
+        return optimizer
 
-    @classmethod
-    def scrape_html(self, url: str, week: str, position: str):
-        request = requests.get(self.url.format(position=position, week=week))
+    def scrape_html(self, position: str):
+        """
+        Scrapes https://www.fantasypros.com for fantasy data.
+
+        Args:
+            position (str): Position to scrape data for.
+
+        Returns:
+            df (DataFrame): Pandas DataFrame with player and fantasy points projections.
+        """
+        request = requests.get(self.url.format(position=position, week=self.week))
         s = BeautifulSoup(request.content, features='lxml')
         div = s.find_all("div", {"class": "mobile-table"})
         df1 = pd.read_html(str(div), skiprows=1, header=0)
@@ -41,11 +59,20 @@ class Optimizer():
         expr = "|".join(self.teams_dict.keys())
         df["Name"] = df["Name"].str.replace(expr, "", regex=True).str.strip()
         df["Name"] = df["Name"].replace(self.rename_dict)
+
         return df
     
-    @classmethod
-    def scrape_dst(self, url: str, week: str, position: str):
-        request = requests.get(self.url.format(position=position, week=week))
+    def scrape_dst(self, position: str):
+        """
+        Scrapes https://www.fantasypros.com for fantasy data for defenses.
+
+        Args:
+            position (str): Position to scrape data for.
+
+        Returns:
+            df (DataFrame): Pandas DataFrame with defense and fantasy points projections.
+        """
+        request = requests.get(self.url.format(position=position, week=self.week))
         s = BeautifulSoup(request.content, features='lxml')
         div = s.find_all("div", {"class": "mobile-table"})
         df1 = pd.read_html(str(div), skiprows=0, header=0)
@@ -55,17 +82,25 @@ class Optimizer():
         df.rename(columns={'Player':'Name'}, inplace=True)
 
         return df
-    
-    @classmethod
+
     def get_lineups(self):
-        week = self.week
+        """
+        Gets optimized lineups from scraped data.
+
+        Args:
+            None
+
+        Returns:
+            lineup (generator): Generator object containing all optimized lineups.
+            
+        """
         dfs = []
         for position in self.positions:
             if position == "dst":
-                df = self.scrape_dst(self.url, week=week, position=position)
+                df = self.scrape_dst(position=position)
                 dfs.append(df)
             else:
-                df = self.scrape_html(self.url, week=week, position=position)
+                df = self.scrape_html(position=position)
                 dfs.append(df)
         dfs = pd.concat(dfs)
         dk = input("Enter Draftkings Url: ")
@@ -89,7 +124,17 @@ class Optimizer():
             yield(lineup)
 
     @staticmethod
-    def lineup_prompt(lineups):
+    def lineup_prompt(lineups) -> str: 
+        """
+        Create string from lineup generator to be used as a prompt.
+
+        Args:
+            lineups (generator): Generator object containing lineups.
+
+        ReturnsL
+            output (str): String containing all lineups in generator.
+
+        """
         output = "\n".join(str(lineup) for lineup in lineups)
 
         return output
