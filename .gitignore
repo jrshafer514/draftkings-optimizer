@@ -1,0 +1,4 @@
+.env
+prompt.txt
+.vscode/
+__pycache__/

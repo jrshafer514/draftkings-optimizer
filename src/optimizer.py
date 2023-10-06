@@ -5,6 +5,14 @@ from pydfs_lineup_optimizer import get_optimizer, Site, Sport, PositionsStack
 import tempfile
 import json
 
+class Draftkings():
+    draftkings_url = None
+
+    @classmethod
+    def set_dk_url(cls, url):
+        cls.draftkings_url = url
+        return cls
+
 class Optimizer():
     """
     This class handles optimizer functions.
@@ -103,7 +111,10 @@ class Optimizer():
                 df = self.scrape_html(position=position)
                 dfs.append(df)
         dfs = pd.concat(dfs)
-        dk = input("Enter Draftkings Url: ")
+        if Draftkings.draftkings_url:
+            dk = Draftkings.draftkings_url
+        else:
+            dk = input("Enter Draftkings Url: ")
         draftkings = pd.read_csv(dk)
         draftkings['Name'] = draftkings['Name'].str.strip()
 
@@ -119,6 +130,7 @@ class Optimizer():
         optimizer = get_optimizer(Site.DRAFTKINGS, Sport.FOOTBALL)
         optimizer.load_players_from_csv(temp_csv_name)
         optimizer.set_max_repeating_players(2)
+        optimizer.add_player_to_lineup(optimizer.get_player_by_name("Lamar Jackson"))
         for lineup in optimizer.optimize(n=5):
 
             yield(lineup)
