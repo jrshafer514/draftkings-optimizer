@@ -4,7 +4,7 @@ import requests
 from pydfs_lineup_optimizer import get_optimizer, Site, Sport, PositionsStack
 import tempfile
 import json
-
+from io import StringIO
 class Draftkings():
     draftkings_url = None
 
@@ -60,7 +60,8 @@ class Optimizer():
         request = requests.get(self.url.format(position=position, week=self.week))
         s = BeautifulSoup(request.content, features='lxml')
         div = s.find_all("div", {"class": "mobile-table"})
-        df1 = pd.read_html(str(div), skiprows=1, header=0)
+        buffer = StringIO(str(div))
+        df1 = pd.read_html(buffer, skiprows=1, header=0)
         df = pd.DataFrame(df1[0])
         df = df[['Player', 'FPTS']]
         df.rename(columns={'Player':'Name'}, inplace=True)
@@ -83,7 +84,8 @@ class Optimizer():
         request = requests.get(self.url.format(position=position, week=self.week))
         s = BeautifulSoup(request.content, features='lxml')
         div = s.find_all("div", {"class": "mobile-table"})
-        df1 = pd.read_html(str(div), skiprows=0, header=0)
+        buffer = StringIO(str(div))
+        df1 = pd.read_html(buffer, skiprows=0, header=0)
         df = pd.DataFrame(df1[0])
         df = df[['Player', 'FPTS']]
         df["Player"] = df["Player"].apply(lambda x: x.split()[-1])

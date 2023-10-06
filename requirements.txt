@@ -1,0 +1,9 @@
+beautifulsoup4==4.12.2
+requests==2.31.0
+pydfs-lineup-optimizer==3.5.0
+python-dotenv==1.0.0
+openai==0.28.1
+tweepy==4.14.0
+pandas==2.1.1
+lxml==4.9.3
+urllib3==1.26.6

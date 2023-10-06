@@ -3,3 +3,5 @@ prompt.txt
 .vscode/
 __pycache__/
 .DS_Store
+api_keys.env
+metadata/
