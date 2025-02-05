@@ -3,10 +3,8 @@ from optimizer import *
 import os
 
 def main(week):
-    dk_url = "https://www.draftkings.com/lineup/getavailableplayerscsv?contestTypeId=21&draftGroupId=93194"
-    Draftkings.set_dk_url(dk_url)
     optimizer = Optimizer.draftkings_football(week)
-    twitter = Twitter.draftkings(week)
+    # twitter = Twitter.draftkings(week)
     
     # tweet = twitter.generate_tweet()
     # twitter.tweet(tweet)
@@ -14,8 +12,25 @@ def main(week):
 
     lineups = optimizer.get_lineups()
     for lineup in lineups:    
-        print(lineup)
+        print('\n\n\n', lineup, '\n\n\n')
+
+
+        
 
 if __name__ == "__main__":
-    week = input("Week number: ")
+    week = "20"
+    os.chdir("src/")
+
+    meta_path = os.path.join(os.pardir, "metadata", "data.json")
+
+    # try:
+    #     with open(meta_path, "r") as f:
+    #         metadata = json.load(f)
+    #     for data in metadata:
+    #         if int(data["week"]) > week:
+    #             week = int(data["week"]) + 1
+
+    # except ValueError:
+    #     week = int(input("Enter Week Number: "))
+
     main(week)

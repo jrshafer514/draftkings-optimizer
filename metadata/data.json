@@ -1,1 +1,80 @@
-[{"player_name": "Lamar Jackson", "price": " $7800, ", "week": "5", "timestamp": "2023-10-06 00:16:39.072416"}, {"player_name": "Wan'Dale Robinson", "price": " $3000, ", "week": "5", "timestamp": "2023-10-06 00:16:39.072440"}, {"player_name": "Nico Collins", "price": " $5600, ", "week": "5", "timestamp": "2023-10-06 00:16:39.072445"}, {"player_name": "Zach Ertz", "price": " $3500, ", "week": "5", "timestamp": "2023-10-06 00:16:39.072449"}, {"player_name": "James Conner", "price": " $5800. ", "week": "5", "timestamp": "2023-10-06 00:16:39.072452"}]
+[
+    {
+        "player_name": "Week 0",
+        "price": "Week 0",
+        "week": 0,
+        "timestamp": "Week 0"
+    },
+    {
+        "player_name": "Jauan Jennings",
+        "price": "4100",
+        "week": 3,
+        "timestamp": "2024-09-18 21:49:25.844196"
+    },
+    {
+        "player_name": "Gabe Davis",
+        "price": "4200",
+        "week": 3,
+        "timestamp": "2024-09-18 21:49:25.844219"
+    },
+    {
+        "player_name": "Greg Dulcich",
+        "price": "2900",
+        "week": 3,
+        "timestamp": "2024-09-18 21:49:25.844224"
+    },
+    {
+        "player_name": "Mark Andrews",
+        "price": "4800",
+        "week": 3,
+        "timestamp": "2024-09-18 21:49:25.844227"
+    },
+    {
+        "player_name": "Theo Johnson",
+        "price": "2700",
+        "week": 3,
+        "timestamp": "2024-09-18 21:49:25.844230"
+    },
+    {
+        "player_name": "Vikings",
+        "price": "2400",
+        "week": 3,
+        "timestamp": "2024-09-18 21:49:25.844234"
+    },
+    {
+        "player_name": "Chris Conley",
+        "price": "3000",
+        "week": 3,
+        "timestamp": "2024-09-26 12:42:27.557522"
+    },
+    {
+        "player_name": "Jaxon-Smith Njigba",
+        "price": "5500",
+        "week": 3,
+        "timestamp": "2024-09-26 12:42:27.557550"
+    },
+    {
+        "player_name": "Brenton Strange",
+        "price": "3100",
+        "week": 3,
+        "timestamp": "2024-09-26 12:42:27.557559"
+    },
+    {
+        "player_name": "Hayden Hurst",
+        "price": "2800",
+        "week": 3,
+        "timestamp": "2024-09-26 12:42:27.557565"
+    },
+    {
+        "player_name": "Greg Dulcich",
+        "price": "2800",
+        "week": 3,
+        "timestamp": "2024-09-26 12:42:27.557572"
+    },
+    {
+        "player_name": "Broncos",
+        "price": "2500",
+        "week": 3,
+        "timestamp": "2024-09-26 12:42:27.557579"
+    }
+]
