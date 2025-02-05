@@ -43,7 +43,7 @@ class Twitter():
         self.week = None
 
     @classmethod
-    def draftkings(cls, week):
+    def draftkings(cls, week) -> 'Twitter':
         """
         Construct Draftkings Twitter Class.
 
@@ -101,7 +101,7 @@ class Twitter():
 
         return None
     
-    def process_tweet(self, tweet) -> None:
+    def process_tweet(self, tweet: str) -> str:
         """
         Proccesses tweet and stores values for player, price, week, and timestamp in json file.
 
@@ -115,22 +115,41 @@ class Twitter():
         player_data = []
         for line in lines:
             if "-" in line:
-                player_name, price = line.split("-")
+                player_name, price, *rest = line.split("-")
+                print(rest)
                 player_name = player_name.strip()
                 info = {
                     "player_name": player_name,
-                    "price": price,
+                    "price": price.replace(",", "").strip().replace(".", ""),
                     "week": self.week,
                     "timestamp": str(datetime.datetime.now())
                 }
                 player_data.append(info)
 
         path = os.path.join(os.pardir, "metadata", "data.json")
+
+        try:
+            with open(path, "r") as file:
+                existing_data = json.load(file)
+        
+        except ValueError:
+            existing_data = None
+
+        
+        if not existing_data:
+            existing_data = [
+                {
+                    "player_name": "Week 0",
+                    "price": "Week 0",
+                    "week": 0,
+                    "timestamp": "Week 0"
+                }
+            ]
+        
+
+        existing_data.extend(player_data)
+
         with open(path, "w") as file:
-            json.dump(player_data, file)
-        
-        return print(f"Written successfully to {path}")
-        
+            json.dump(existing_data, file, indent=4)
 
-
-
+        return print(f"Written successfully to {path}") 

@@ -1,17 +1,13 @@
 import pandas as pd
 from bs4 import BeautifulSoup
 import requests
-from pydfs_lineup_optimizer import get_optimizer, Site, Sport, PositionsStack
+from pydfs_lineup_optimizer import get_optimizer, Site, Sport, PositionsStack, LineupOptimizer
 import tempfile
 import json
 from io import StringIO
-class Draftkings():
-    draftkings_url = None
-
-    @classmethod
-    def set_dk_url(cls, url):
-        cls.draftkings_url = url
-        return cls
+from typing import Generator
+import requests
+import os
 
 class Optimizer():
     """
@@ -24,9 +20,11 @@ class Optimizer():
         self.url = None
         self.positions = None
         self.config_file = None
+        self.dk_url = None
+        self.metadata_file = None
 
     @classmethod
-    def draftkings_football(cls, week: str):
+    def draftkings_football(cls, week: str) -> 'Optimizer':
         """
         Construct Draftkings Football Optimizer Class
 
@@ -44,10 +42,39 @@ class Optimizer():
         optimizer.teams_dict = optimizer.config_file["TEAMS_DICT"]
         optimizer.url = "https://www.fantasypros.com/nfl/projections/{position}.php?week={week}&scoring=PPR"
         optimizer.positions = ["qb", "rb", "wr", "te", "dst"]
+        optimizer.dk_url = "https://www.draftkings.com/lineup/getavailableplayerscsv?contestTypeId=21&draftGroupId={id}"
     
         return optimizer
+    
+    def get_contest_id(self) -> str:
+        id = None
+        response = requests.get("https://www.draftkings.com/lobby/getcontests?sport=NFL")
+        data = response.json()
 
-    def scrape_html(self, position: str):
+        for contest in data["Contests"]:
+            if contest["gameType"] == "Classic" and "(Thu-Mon)" in contest["n"] and contest["dg"]:
+                id = contest["dg"]
+                break
+        return str(id)
+
+
+    def check_existing_contest(self):
+        path = os.path.join(os.pardir, "metadata", "dk.json")
+
+        try:
+            with open(path, 'r') as file:
+                data = json.load(file)
+                week_data = data.get(str(self.week), None)
+                if week_data:
+                    # Return the first URL found for the week (assuming one entry per week)
+                    return week_data[0]["url"] if week_data else None
+                return None
+        except (FileNotFoundError, ValueError):
+            return None  # Return None if no data or file is found
+    
+
+
+    def scrape_html(self, position: str) -> pd.DataFrame:
         """
         Scrapes https://www.fantasypros.com for fantasy data.
 
@@ -71,7 +98,7 @@ class Optimizer():
 
         return df
     
-    def scrape_dst(self, position: str):
+    def scrape_dst(self, position: str) -> pd.DataFrame:
         """
         Scrapes https://www.fantasypros.com for fantasy data for defenses.
 
@@ -93,7 +120,7 @@ class Optimizer():
 
         return df
 
-    def get_lineups(self):
+    def get_lineups(self) -> Generator[LineupOptimizer.optimize, None, None]:
         """
         Gets optimized lineups from scraped data.
 
@@ -113,10 +140,15 @@ class Optimizer():
                 df = self.scrape_html(position=position)
                 dfs.append(df)
         dfs = pd.concat(dfs)
-        if Draftkings.draftkings_url:
-            dk = Draftkings.draftkings_url
-        else:
-            dk = input("Enter Draftkings Url: ")
+
+        dk = self.check_existing_contest()
+
+        if not dk:
+            # If no URL is found, fetch a new one, record it, and proceed
+            contest_id = self.get_contest_id()
+            dk = self.dk_url.format(id=contest_id)
+            self.record_metadata(id=contest_id, week=self.week)
+
         draftkings = pd.read_csv(dk)
         draftkings['Name'] = draftkings['Name'].str.strip()
 
@@ -132,13 +164,20 @@ class Optimizer():
         optimizer = get_optimizer(Site.DRAFTKINGS, Sport.FOOTBALL)
         optimizer.load_players_from_csv(temp_csv_name)
         optimizer.set_max_repeating_players(2)
-        optimizer.add_player_to_lineup(optimizer.get_player_by_name("Lamar Jackson"))
-        for lineup in optimizer.optimize(n=5):
+        # optimizer.remove_player(optimizer.get_player_by_name("Jakobi Meyers"))
+        # optimizer.player_pool.exclude_teams(['NYG'])
 
+        # optimizer.remove_player(optimizer.get_player_by_name("Zach Charbonnet"))
+        # optimizer.add_player_to_lineup(optimizer.get_player_by_name("Ja'Marr Chase"))
+        # optimizer.add_player_to_lineup(optimizer.get_player_by_name("Allen Lazard"))
+
+        # optimizer.set_players_from_one_team({'GB': 2})
+        
+        for lineup in optimizer.optimize(n=5):
             yield(lineup)
 
     @staticmethod
-    def lineup_prompt(lineups) -> str: 
+    def lineup_prompt(lineups: Generator[LineupOptimizer.optimize, None, None]) -> str: 
         """
         Create string from lineup generator to be used as a prompt.
 
@@ -152,3 +191,32 @@ class Optimizer():
         output = "\n".join(str(lineup) for lineup in lineups)
 
         return output
+    
+    def record_metadata(self, id, week):
+        # Define the path to the metadata file
+        path = os.path.join(os.pardir, "metadata", "dk.json")
+        
+        # Try to open the existing metadata file
+        try:
+            with open(path, "r") as file:
+                existing_data = json.load(file)
+        except (FileNotFoundError, ValueError):
+            # If the file doesn't exist or is invalid, create an empty dictionary
+            existing_data = {}
+
+        # Prepare the new data with formatted URL for the given week
+        new_data = {
+            "week": week,
+            "url": self.dk_url.format(id=id)
+        }
+
+        # If the week is not present in the metadata, add a new entry
+        if str(week) not in existing_data:
+            existing_data[str(week)] = []
+
+        # Ensure there's only one URL for the week (or update the existing one)
+        existing_data[str(week)] = [new_data]
+
+        # Write the updated data back to the file
+        with open(path, "w") as file:
+            json.dump(existing_data, file, indent=4)
